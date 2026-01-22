@@ -1,0 +1,12 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: vendor_contract
+  version: v1
+
+  importDerivedRoles:
+    - role_hierarchy_scoped
+
+  rules:
+    - actions: ["access"]
+      derivedRoles: ["scm_role", "admin_role"]
+      effect: EFFECT_ALLOW
