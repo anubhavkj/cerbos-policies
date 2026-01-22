@@ -1,0 +1,57 @@
+
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: default
+  resource: invoice
+
+  # Optional: reference derived roles from a separate file (see next section)
+  derivedRoles:
+    - name: finance_reader
+    - name: finance_owner
+    - name: auditor
+
+  rules:
+    # 1) Anyone in finance can view invoices from their own region
+    - actions: ["view"]
+      effect: EFFECT_ALLOW
+      roles: ["finance_reader", "auditor"]
+      condition:
+        match:
+          expr: request.principal.attr.region == request.resource.attr.region
+
+    # 2) Owners (creator or assignee) can edit if invoice is still DRAFT
+    - actions: ["edit"]
+      effect: EFFECT_ALLOW
+      roles: ["finance_owner"]
+      condition:
+        match:
+          all:
+            of:
+              - expr: request.resource.attr.status == "DRAFT"
+              - any:
+                  of:
+                    - expr: request.resource.attr.ownerId == request.principal.id
+                    - expr: request.resource.attr.assigneeId == request.principal.id
+
+    # 3) Approvers can approve only if total <= 10000 and currency is allowed
+    - actions: ["approve"]
+      effect: EFFECT_ALLOW
+      roles: ["approver"]
+      condition:
+        match:
+          all:
+            of:
+              - expr: request.resource.attr.totalAmount <= 10000
+              - expr: request.resource.attr.currency in ["USD","EUR","INR"]
+
+    # 4) Explicit deny example: nobody can delete invoices that are PAID
+    - actions: ["delete"]
+      effect: EFFECT_DENY
+      condition:
+        match:
+          expr: request.resource.attr.status == "PAID"
+
+    # 5) Admin override (read/edit/approve/delete) regardless of attributes
+    - actions: ["view","edit","approve","delete"]
+      effect: EFFECT_ALLOW
+      roles: ["admin"]
