@@ -1,7 +1,7 @@
 apiVersion: api.cerbos.dev/v1
 resourcePolicy:
+  version: default
   resource: vendor_contract
-  version: v1
 
   importDerivedRoles:
     - role_hierarchy_scoped
@@ -10,3 +10,14 @@ resourcePolicy:
     - actions: ["access"]
       derivedRoles: ["scm_role", "admin_role"]
       effect: EFFECT_ALLOW
+
+    - actions: ["access"]
+      roles: ["*"]
+      effect: EFFECT_DENY
+      condition:
+        match:
+          expr: request.resource.attr.expiresAt != null
+                && request.resource.attr.now != null
+                && timestamp(request.resource.attr.expiresAt)
+                   < timestamp(request.resource.attr.now)
+
