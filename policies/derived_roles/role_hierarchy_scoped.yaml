@@ -2,34 +2,38 @@ apiVersion: api.cerbos.dev/v1
 derivedRoles:
   name: role_hierarchy_scoped
 
+  variables:
+    local:
+      same_tenant: request.principal.attr.tenant == request.resource.attr.tenant
+      same_region: request.principal.attr.region == request.resource.attr.region
+
   definitions:
     - name: user_role
       parentRoles: ["user"]
       condition:
         match:
-          expr: request.principal.attr.tenant == request.resource.attr.tenant
+          expr: variables.same_tenant
 
     - name: specialist_role
       parentRoles: ["inventory_control_specialist"]
       condition:
         match:
-          expr: request.principal.attr.tenant == request.resource.attr.tenant
+          expr: variables.same_tenant
 
     - name: manager_role
       parentRoles: ["warehouse_manager"]
       condition:
         match:
-          expr: request.principal.attr.tenant == request.resource.attr.tenant
+          expr: variables.same_tenant
 
     - name: scm_role
       parentRoles: ["supply_chain_manager"]
       condition:
         match:
-          expr: request.principal.attr.tenant == request.resource.attr.tenant
-                && request.principal.attr.region == request.resource.attr.region
+          expr: variables.same_tenant && variables.same_region
 
     - name: admin_role
       parentRoles: ["inventory_admin"]
       condition:
         match:
-          expr: request.principal.attr.tenant == request.resource.attr.tenant
+          expr: variables.same_tenant
