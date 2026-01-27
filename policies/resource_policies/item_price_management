@@ -1,7 +1,7 @@
 apiVersion: api.cerbos.dev/v1
 resourcePolicy:
   version: default
-  resource: ItemPriceManagement
+  resource: item_price_management
 
   rules:
     # READ
