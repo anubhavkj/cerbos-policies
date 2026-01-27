@@ -7,11 +7,11 @@ resourcePolicy:
     - role_hierarchy_scoped
 
   rules:
-    - actions: ["access"]
+    - actions: ["vendor_contract_access"]
       derivedRoles: ["scm_role", "admin_role"]
       effect: EFFECT_ALLOW
 
-    - actions: ["access"]
+    - actions: ["vendor_contract_access"]
       roles: ["*"]
       effect: EFFECT_DENY
       condition:
