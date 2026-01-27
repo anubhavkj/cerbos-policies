@@ -19,13 +19,13 @@ resourcePolicy:
             request.principal.roles.exists(r,
               r in (
                 (
-                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantA"
+                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t1"
                 )
                 ? ["user","inventory_control_specialist","warehouse_manager","supply_chain_manager","inventory_admin"]
                 :
                 (
                   (
-                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantB"
+                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t2"
                   )
                   ? ["user","inventory_control_specialist","warehouse_manager","supply_chain_manager","inventory_admin"]
                   : []
@@ -33,7 +33,7 @@ resourcePolicy:
               )
             )
 
-    # CREATE  (note: ICS allowed in tenantA, not in tenantB)
+    # CREATE  (note: ICS allowed in t1, not in t2)
     - actions: ["price_create"]
       effect: EFFECT_ALLOW
       roles:
@@ -48,13 +48,13 @@ resourcePolicy:
             request.principal.roles.exists(r,
               r in (
                 (
-                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantA"
+                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t1"
                 )
                 ? ["inventory_control_specialist","warehouse_manager","supply_chain_manager","inventory_admin"]
                 :
                 (
                   (
-                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantB"
+                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t2"
                   )
                   ? ["warehouse_manager","supply_chain_manager","inventory_admin"]
                   : []
@@ -77,13 +77,13 @@ resourcePolicy:
             request.principal.roles.exists(r,
               r in (
                 (
-                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantA"
+                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t1"
                 )
                 ? ["warehouse_manager","supply_chain_manager","inventory_admin"]
                 :
                 (
                   (
-                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantB"
+                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t2"
                   )
                   ? ["warehouse_manager","supply_chain_manager","inventory_admin"]
                   : []
@@ -106,13 +106,13 @@ resourcePolicy:
             request.principal.roles.exists(r,
               r in (
                 (
-                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantA"
+                  (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t1"
                 )
                 ? ["supply_chain_manager"]
                 :
                 (
                   (
-                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.active_tenant) == "tenantB"
+                    (request.resource.attr.tenant != "" ? request.resource.attr.tenant : request.principal.attr.tenant) == "t2"
                   )
                   ? ["supply_chain_manager"]
                   : []
