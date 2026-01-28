@@ -14,10 +14,5 @@ resourcePolicy:
     - actions: ["vendor_contract_access"]
       roles: ["*"]
       effect: EFFECT_DENY
-      condition:
-        match:
-          expr: request.resource.attr.expiresAt != null
-                && request.resource.attr.now != null
-                && timestamp(request.resource.attr.expiresAt)
-                   < timestamp(request.resource.attr.now)
+     
 
