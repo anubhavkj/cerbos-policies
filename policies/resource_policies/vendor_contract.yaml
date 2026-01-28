@@ -11,8 +11,5 @@ resourcePolicy:
       derivedRoles: ["scm_role", "admin_role"]
       effect: EFFECT_ALLOW
 
-    - actions: ["vendor_contract_access"]
-      roles: ["*"]
-      effect: EFFECT_DENY
-     
+
 
