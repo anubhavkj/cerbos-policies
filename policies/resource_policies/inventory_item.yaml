@@ -4,55 +4,19 @@ resourcePolicy:
   resource: inventory_item
 
   rules:
-    # DENY: If item is locked, nobody can adjust (both actions)
-    - actions: ["inventory_adjust_counts", "inventory_adjust_counts_override"]
+    # ALLOW: Emily can perform override adjustments (same-tenant only)
+    - actions: ["inventory_view", inventory_adjust_counts_override"]
+      effect: EFFECT_ALLOW
       roles: ["*"]
       condition:
         match:
-          expr: request.resource.attr.locked == true
-      effect: EFFECT_DENY
+          expr: request.resource.attr.tenant == request.principal.attr.tenant &&
+                request.principal.attr.username == "emily"
 
-    # DENY: If variance exceeds threshold, nobody can do inventory_inventory_adjust_counts
-    - actions: ["inventory_adjust_counts"]
-      roles: ["*"]
-      condition:
-        match:
-          expr: request.resource.attr.variance > request.resource.attr.threshold
-      effect: EFFECT_DENY
-
-    # ALLOW: inventory_view for these roles, same-tenant only
+    # ALLOW: Everyone can view (same-tenant only)
     - actions: ["inventory_view"]
       effect: EFFECT_ALLOW
-      roles:
-        - user
-        - inventory_control_specialist
-        - warehouse_manager
-        - supply_chain_manager
-        - inventory_admin
+      roles: ["*"]
       condition:
         match:
-          expr: request.resource.attr.tenant == request.principal.attr.active_tenant
-
-    # ALLOW: inventory_inventory_adjust_counts for specialist/manager/scm/admin within variance limit, same-tenant only
-    - actions: ["inventory_adjust_counts"]
-      effect: EFFECT_ALLOW
-      roles:
-        - specialist_role
-        - inventory_control_specialist
-        - warehouse_manager
-        - supply_chain_manager
-        - inventory_admin
-      condition:
-        match:
-          expr: request.resource.attr.tenant == request.principal.attr.active_tenant && request.resource.attr.variance <= request.resource.attr.threshold
-
-    # ALLOW: inventory_inventory_adjust_counts_override for manager/scm/admin, same-tenant only
-    - actions: ["inventory_adjust_counts_override"]
-      effect: EFFECT_ALLOW
-      roles:
-        - warehouse_manager
-        - supply_chain_manager
-        - inventory_admin
-      condition:
-        match:
-          expr: request.resource.attr.tenant == request.principal.attr.active_tenant
+          expr: request.resource.attr.tenant == request.principal.attr.tenant
