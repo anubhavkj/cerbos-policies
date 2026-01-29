@@ -5,7 +5,7 @@ resourcePolicy:
 
   rules:
     # ALLOW: Emily can perform override adjustments (same-tenant only)
-    - actions: ["inventory_view", inventory_adjust_counts_override"]
+    - actions: ["inventory_view", "inventory_adjust_counts_override"]
       effect: EFFECT_ALLOW
       roles: ["*"]
       condition:
