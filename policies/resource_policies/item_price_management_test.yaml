@@ -1,0 +1,246 @@
+# yaml-language-server: $schema=https://api.cerbos.dev/latest/cerbos/policy/v1/TestSuite.schema.json
+name: ItemPriceManagement_TestSuite
+description: Role-only tests for item_price_management matching the T1/T2 permission grid
+
+principals:
+  # =========================
+  # Tenant T1 role principals
+  # =========================
+  user_t1:
+    id: user_t1
+    roles: ["user"]
+    attr: { tenant: "t1" }
+
+  inventory_control_specialist_t1:
+    id: ics_t1
+    roles: ["inventory_control_specialist"]
+    attr: { tenant: "t1" }
+
+  warehouse_manager_t1:
+    id: wm_t1
+    roles: ["warehouse_manager"]
+    attr: { tenant: "t1" }
+
+  supply_chain_manager_t1:
+    id: scm_t1
+    roles: ["supply_chain_manager"]
+    attr: { tenant: "t1" }
+
+  inventory_admin_t1:
+    id: ia_t1
+    roles: ["inventory_admin"]
+    attr: { tenant: "t1" }
+
+  # =========================
+  # Tenant T2 role principals
+  # =========================
+  user_t2:
+    id: user_t2
+    roles: ["user"]
+    attr: { tenant: "t2" }
+
+  inventory_control_specialist_t2:
+    id: ics_t2
+    roles: ["inventory_control_specialist"]
+    attr: { tenant: "t2" }
+
+  warehouse_manager_t2:
+    id: wm_t2
+    roles: ["warehouse_manager"]
+    attr: { tenant: "t2" }
+
+  supply_chain_manager_t2:
+    id: scm_t2
+    roles: ["supply_chain_manager"]
+    attr: { tenant: "t2" }
+
+  inventory_admin_t2:
+    id: ia_t2
+    roles: ["inventory_admin"]
+    attr: { tenant: "t2" }
+
+principalGroups:
+  t1_roles:
+    principals:
+      - user_t1
+      - inventory_control_specialist_t1
+      - warehouse_manager_t1
+      - supply_chain_manager_t1
+      - inventory_admin_t1
+
+  t2_roles:
+    principals:
+      - user_t2
+      - inventory_control_specialist_t2
+      - warehouse_manager_t2
+      - supply_chain_manager_t2
+      - inventory_admin_t2
+
+  # Create allow/deny groups per tenant 
+  t1_create_allow:
+    principals:
+      - inventory_control_specialist_t1
+      - warehouse_manager_t1
+      - supply_chain_manager_t1
+      - inventory_admin_t1
+  t1_create_deny:
+    principals: [user_t1]
+
+  t2_create_allow:
+    principals:
+      - warehouse_manager_t2
+      - supply_chain_manager_t2
+      - inventory_admin_t2
+  t2_create_deny:
+    principals:
+      - user_t2
+      - inventory_control_specialist_t2
+
+  # Update allow/deny groups per tenant
+  t1_update_allow:
+    principals:
+      - warehouse_manager_t1
+      - supply_chain_manager_t1
+      - inventory_admin_t1
+  t1_update_deny:
+    principals:
+      - user_t1
+      - inventory_control_specialist_t1
+
+  t2_update_allow:
+    principals:
+      - warehouse_manager_t2
+      - supply_chain_manager_t2
+      - inventory_admin_t2
+  t2_update_deny:
+    principals:
+      - user_t2
+      - inventory_control_specialist_t2
+
+  # Delete allow/deny groups per tenant
+  t1_delete_allow:
+    principals: [supply_chain_manager_t1]
+  t1_delete_deny:
+    principals:
+      - user_t1
+      - inventory_control_specialist_t1
+      - warehouse_manager_t1
+      - inventory_admin_t1
+
+  t2_delete_allow:
+    principals: [supply_chain_manager_t2]
+  t2_delete_deny:
+    principals:
+      - user_t2
+      - inventory_control_specialist_t2
+      - warehouse_manager_t2
+      - inventory_admin_t2
+
+resources:
+  # Resource kind must match your policy: item_price_management
+  item_t1:
+    id: item_t1
+    kind: item_price_management
+    attr: { tenant: "t1" }
+
+  item_t2:
+    id: item_t2
+    kind: item_price_management
+    attr: { tenant: "t2" }
+
+resourceGroups:
+  t1_items:
+    resources: ["item_t1"]
+  t2_items:
+    resources: ["item_t2"]
+
+tests:
+  # ==========================
+  # Tenant T1 
+  # ==========================
+  - name: Tenant T1
+    input:
+      principalGroups: ["t1_roles"]
+      resourceGroups: ["t1_items"]
+      actions: ["price_read", "price_create", "price_update", "price_delete"]
+    expected:
+      # READ: all roles in T1 allowed (per your grid)
+      - principalGroups: ["t1_roles"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_read: EFFECT_ALLOW
+
+      # CREATE: 
+      - principalGroups: ["t1_create_allow"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_create: EFFECT_ALLOW
+      - principalGroups: ["t1_create_deny"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_create: EFFECT_DENY
+
+      # UPDATE: 
+      - principalGroups: ["t1_update_allow"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_update: EFFECT_ALLOW
+      - principalGroups: ["t1_update_deny"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_update: EFFECT_DENY
+
+      # DELETE: 
+      - principalGroups: ["t1_delete_allow"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_delete: EFFECT_ALLOW
+      - principalGroups: ["t1_delete_deny"]
+        resourceGroups: ["t1_items"]
+        actions:
+          price_delete: EFFECT_DENY
+
+  # ==========================
+  # Tenant T2 
+  # ==========================
+  - name: Tenant T2
+    input:
+      principalGroups: ["t2_roles"]
+      resourceGroups: ["t2_items"]
+      actions: ["price_read", "price_create", "price_update", "price_delete"]
+    expected:
+      # READ: all roles in T2 allowed (per your grid)
+      - principalGroups: ["t2_roles"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_read: EFFECT_ALLOW
+
+      # CREATE:ICS denied in T2
+      - principalGroups: ["t2_create_allow"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_create: EFFECT_ALLOW
+      - principalGroups: ["t2_create_deny"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_create: EFFECT_DENY
+
+      # UPDATE: 
+      - principalGroups: ["t2_update_allow"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_update: EFFECT_ALLOW
+      - principalGroups: ["t2_update_deny"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_update: EFFECT_DENY
+
+      # DELETE: 
+      - principalGroups: ["t2_delete_allow"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_delete: EFFECT_ALLOW
+      - principalGroups: ["t2_delete_deny"]
+        resourceGroups: ["t2_items"]
+        actions:
+          price_delete: EFFECT_DENY
