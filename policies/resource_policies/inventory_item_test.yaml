@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://api.cerbos.dev/latest/cerbos/policy/v1/TestSuite.schema.json
+name: InventoryItem_TestSuite
+description: Validate tenant-scoped view and Emily's override rights for inventory_item
+
+# We model Emily and a Alex(generic user) in both tenants T1 and T2.
+principals:
+  emily_t1:
+    id: emily
+    roles: ["*"]              # roles don't matter for this policy; username & tenant do
+    attr: { username: "emily", tenant: "t1" }
+
+  emily_t2:
+    id: emily
+    roles: ["*"]
+    attr: { username: "emily", tenant: "t2" }
+
+  alex_t1:
+    id: alex
+    roles: ["*"]
+    attr: { username: "alex", tenant: "t1" }
+
+  alex_t2:
+    id: alex
+    roles: ["*"]
+    attr: { username: "alex", tenant: "t2" }
+
+# ---------- Resources (what) ----------
+# Two resources, each explicitly set to a tenant to avoid ambiguity.
+resources:
+  item_t1:
+    id: item_t1
+    kind: inventory_item
+    attr: { tenant: "t1" }
+
+  item_t2:
+    id: item_t2
+    kind: inventory_item
+    attr: { tenant: "t2" }
+
+# ---------- Tests ----------
+tests:
+  # ==========================================================
+  # 1) Same-tenant access for T1
+  #    - Emily (t1) can view and override on item_t1
+  #    - Alex (t1) can view but cannot override on item_t1
+  # ==========================================================
+  - name: Same-tenant (T1) rules
+    input:
+      principals: ["emily_t1", "alex_t1"]
+      resources: ["item_t1"]
+      actions: ["inventory_view", "inventory_adjust_counts_override"]
+    expected:
+      - principal: emily_t1
+        resource: item_t1
+        actions:
+          inventory_view: EFFECT_ALLOW
+          inventory_adjust_counts_override: EFFECT_ALLOW
+      - principal: alex_t1
+        resource: item_t1
+        actions:
+          inventory_view: EFFECT_ALLOW
+          inventory_adjust_counts_override: EFFECT_DENY
+
+  # ==========================================================
+  # 2) Same-tenant access for T2
+  #    - Emily (t2) can view and override on item_t2
+  #    - Alex (t2) can view but cannot override on item_t2
+  # ==========================================================
+  - name: Same-tenant (T2) rules
+    input:
+      principals: ["emily_t2", "alex_t2"]
+      resources: ["item_t2"]
+      actions: ["inventory_view", "inventory_adjust_counts_override"]
+    expected:
+      - principal: emily_t2
+        resource: item_t2
+        actions:
+          inventory_view: EFFECT_ALLOW
+          inventory_adjust_counts_override: EFFECT_ALLOW
+      - principal: alex_t2
+        resource: item_t2
+        actions:
+          inventory_view: EFFECT_ALLOW
+          inventory_adjust_counts_override: EFFECT_DENY
+
+
