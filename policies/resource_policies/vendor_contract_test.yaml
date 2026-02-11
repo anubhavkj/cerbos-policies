@@ -1,0 +1,185 @@
+# yaml-language-server: $schema=https://api.cerbos.dev/latest/cerbos/policy/v1/TestSuite.schema.json
+name: VendorContract_TestSuite
+description: Validate vendor_contract_access using derived roles scm_role (tenant+region) and admin_role (tenant only)
+
+# -------------------------
+# Principals (who)
+# -------------------------
+principals:
+  # Supply Chain Manager (SCM) - parent role for scm_role
+  scm_t1_east:
+    id: scm_t1_east
+    roles: ["supply_chain_manager"]
+    attr: { tenant: "t1", region: "east" }
+
+  scm_t1_west:
+    id: scm_t1_west
+    roles: ["supply_chain_manager"]
+    attr: { tenant: "t1", region: "west" }
+
+  scm_t2_east:
+    id: scm_t2_east
+    roles: ["supply_chain_manager"]
+    attr: { tenant: "t2", region: "east" }
+
+  # Inventory Admin - parent role for admin_role
+  admin_t1_east:
+    id: admin_t1_east
+    roles: ["inventory_admin"]
+    attr: { tenant: "t1", region: "east" }
+
+  admin_t2_west:
+    id: admin_t2_west
+    roles: ["inventory_admin"]
+    attr: { tenant: "t2", region: "west" }
+
+  # Other roles (should remain denied by resource policy)
+  user_t1_east:
+    id: user_t1_east
+    roles: ["user"]
+    attr: { tenant: "t1", region: "east" }
+
+  specialist_t1_east:
+    id: specialist_t1_east
+    roles: ["inventory_control_specialist"]
+    attr: { tenant: "t1", region: "east" }
+
+  manager_t1_east:
+    id: manager_t1_east
+    roles: ["warehouse_manager"]
+    attr: { tenant: "t1", region: "east" }
+
+# -------------------------
+# Resources (what)
+# -------------------------
+resources:
+  # Vendor contracts in different tenant/region combinations
+  vc_t1_east:
+    id: vc_t1_east
+    kind: vendor_contract
+    attr: { tenant: "t1", region: "east" }
+
+  vc_t1_west:
+    id: vc_t1_west
+    kind: vendor_contract
+    attr: { tenant: "t1", region: "west" }
+
+  vc_t2_east:
+    id: vc_t2_east
+    kind: vendor_contract
+    attr: { tenant: "t2", region: "east" }
+
+tests:
+  # -------------------------
+  # 1) SCM: must match tenant AND region to be allowed
+  # -------------------------
+  - name: SCM - same tenant & same region -> ALLOW; otherwise DENY
+    input:
+      principals: ["scm_t1_east", "scm_t1_west", "scm_t2_east"]
+      resources: ["vc_t1_east", "vc_t1_west", "vc_t2_east"]
+      actions: ["vendor_contract_access"]
+    expected:
+      # scm_t1_east vs vc_t1_east => same tenant (t1) & same region (east) => ALLOW
+      - principal: scm_t1_east
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_ALLOW
+
+      # scm_t1_east vs vc_t1_west => same tenant (t1) but different region => DENY
+      - principal: scm_t1_east
+        resource: vc_t1_west
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+      # scm_t1_east vs vc_t2_east => different tenant => DENY
+      - principal: scm_t1_east
+        resource: vc_t2_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+      # scm_t1_west vs vc_t1_west => same tenant (t1) & same region (west) => ALLOW
+      - principal: scm_t1_west
+        resource: vc_t1_west
+        actions:
+          vendor_contract_access: EFFECT_ALLOW
+
+      # scm_t1_west vs vc_t1_east => tenant same, region different => DENY
+      - principal: scm_t1_west
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+      # scm_t2_east vs vc_t2_east => same tenant (t2) & same region (east) => ALLOW
+      - principal: scm_t2_east
+        resource: vc_t2_east
+        actions:
+          vendor_contract_access: EFFECT_ALLOW
+
+      # scm_t2_east vs vc_t1_east => different tenant => DENY
+      - principal: scm_t2_east
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+  # -------------------------
+  # 2) Admin: must match tenant; region does not matter
+  # -------------------------
+  - name: Admin - same tenant -> ALLOW; different tenant -> DENY
+    input:
+      principals: ["admin_t1_east", "admin_t2_west"]
+      resources: ["vc_t1_east", "vc_t1_west", "vc_t2_east"]
+      actions: ["vendor_contract_access"]
+    expected:
+      # admin_t1_east vs vc_t1_east => same tenant (t1) => ALLOW
+      - principal: admin_t1_east
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_ALLOW
+
+      # admin_t1_east vs vc_t1_west => same tenant (t1), region irrelevant => ALLOW
+      - principal: admin_t1_east
+        resource: vc_t1_west
+        actions:
+          vendor_contract_access: EFFECT_ALLOW
+
+      # admin_t1_east vs vc_t2_east => different tenant => DENY
+      - principal: admin_t1_east
+        resource: vc_t2_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+      # admin_t2_west vs vc_t2_east => same tenant (t2) => ALLOW
+      - principal: admin_t2_west
+        resource: vc_t2_east
+        actions:
+          vendor_contract_access: EFFECT_ALLOW
+
+      # admin_t2_west vs vc_t1_east => different tenant => DENY
+      - principal: admin_t2_west
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+  # -------------------------
+  # 3) Other roles should be denied (even if tenant/region match)
+  # -------------------------
+  - name: Other roles (user, specialist, manager) are always DENIED by resource policy
+    input:
+      principals: ["user_t1_east", "specialist_t1_east", "manager_t1_east"]
+      resources: ["vc_t1_east"]
+      actions: ["vendor_contract_access"]
+    expected:
+      - principal: user_t1_east
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+      - principal: specialist_t1_east
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
+
+      - principal: manager_t1_east
+        resource: vc_t1_east
+        actions:
+          vendor_contract_access: EFFECT_DENY
