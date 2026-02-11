@@ -8,7 +8,7 @@ resourcePolicy:
     - actions: ["price_read"]
       effect: EFFECT_ALLOW
       roles:
-        - sayali
+        - user
         - inventory_control_specialist
         - warehouse_manager
         - supply_chain_manager
