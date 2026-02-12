@@ -1,6 +1,6 @@
 apiVersion: api.cerbos.dev/v1
 resourcePolicy:
-  version: v1
+  version: default
   resource: inventory_item
 
   rules:
