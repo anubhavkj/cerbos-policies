@@ -30,13 +30,13 @@ resources:
   item_t1:
     id: item_t1
     kind: inventory_item
-    policyVersion: v1
+    # policyVersion: v1
     attr: { tenant: "t1" }
 
   item_t2:
     id: item_t2
     kind: inventory_item
-    policyVersion: v1
+    # policyVersion: v1
     attr: { tenant: "t2" }
 
 # ---------- Tests ----------
