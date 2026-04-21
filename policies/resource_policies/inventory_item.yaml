@@ -20,3 +20,19 @@ resourcePolicy:
       condition:
         match:
           expr: request.resource.attr.tenant == request.principal.attr.tenant
+
+    # ALLOW: Everyone can view (same-tenant only)
+    - actions: ["inventory_view"]
+      effect: EFFECT_ALLOW
+      roles: ["QC_TEAM"]
+      condition:
+        match:
+          expr: request.resource.attr.tenant == request.principal.attr.tenant
+
+    # ALLOW: Everyone can view (same-tenant only)
+    - actions: ["supervisor_inventory_view"]
+      effect: EFFECT_ALLOW
+      roles: ["QC_SUPERVISOR"]
+      condition:
+        match:
+          expr: request.resource.attr.tenant == request.principal.attr.tenant
