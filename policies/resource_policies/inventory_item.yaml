@@ -2,7 +2,7 @@ apiVersion: api.cerbos.dev/v1
 resourcePolicy:
   version: default
   resource: inventory_item
-
+ 
   rules:
     # ALLOW: Emily can perform override adjustments (same-tenant only)
     - actions: ["inventory_view", "inventory_adjust_counts_override"]
@@ -12,7 +12,7 @@ resourcePolicy:
         match:
           expr: request.resource.attr.tenant == request.principal.attr.tenant &&
                 request.principal.attr.username == "emily"
-
+ 
     # ALLOW: Everyone can view (same-tenant only)
     - actions: ["inventory_view"]
       effect: EFFECT_ALLOW
@@ -20,7 +20,7 @@ resourcePolicy:
       condition:
         match:
           expr: request.resource.attr.tenant == request.principal.attr.tenant
-
+ 
     # ALLOW: Everyone can view (same-tenant only)
     - actions: ["inventory_view"]
       effect: EFFECT_ALLOW
@@ -28,11 +28,35 @@ resourcePolicy:
       condition:
         match:
           expr: request.resource.attr.tenant == request.principal.attr.tenant
-
+ 
     # ALLOW: Everyone can view (same-tenant only)
     - actions: ["supervisor_inventory_view"]
       effect: EFFECT_ALLOW
       roles: ["QC_SUPERVISOR"]
+      condition:
+        match:
+          expr: request.resource.attr.tenant == request.principal.attr.tenant
+ 
+    # ALLOW: Coordinator can perform action on supplier task
+    - actions: ["supplier_task_action"]
+      effect: EFFECT_ALLOW
+      roles: ["COORDINATOR"]
+      condition:
+        match:
+          expr: request.resource.attr.tenant == request.principal.attr.tenant
+ 
+    # ALLOW: Consultant can perform action on coordinator task
+    - actions: ["coordinator_task_action"]
+      effect: EFFECT_ALLOW
+      roles: ["CONSULTANT"]
+      condition:
+        match:
+          expr: request.resource.attr.tenant == request.principal.attr.tenant
+         
+    # ALLOW: Manager can perform action on consultant task
+    - actions: ["consultant_task_action"]
+      effect: EFFECT_ALLOW
+      roles: ["MANAGER"]
       condition:
         match:
           expr: request.resource.attr.tenant == request.principal.attr.tenant
